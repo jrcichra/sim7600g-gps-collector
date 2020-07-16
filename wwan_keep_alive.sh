@@ -4,21 +4,20 @@ echo "Sleeping for a bit after systemd tells us to start just in case!"
 sleep 18
 while true
 do
-	sudo qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='offline'
-	RC=$?
-	if [ $RC != 0 ];then
-	       continue
-	fi	       
-	sleep 2
-	sudo qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='reset'
-	RC=$?
-	if [ $RC != 0 ];then
-	       continue
-	fi	       
-	sleep 2
 	# Sometimes this doesn't work on the first try
 	while true
 	do
+		if [ ! -e /sys/class/gpio/gpio4 ]; then
+		    echo "File exists."
+		    echo "4" > /sys/class/gpio/export
+		fi
+		echo "out" > /sys/class/gpio/gpio4/direction
+		echo "0" > /sys/class/gpio/gpio4/value
+		sleep 2
+		echo "1" > /sys/class/gpio/gpio4/value
+
+		sleep 4
+
 		sudo qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='online'
 		RC=$?
 		if [ $RC != 0 ];then
