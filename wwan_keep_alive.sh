@@ -51,7 +51,7 @@ do
 	       continue
 	fi	       
 	sleep 2
-	sudo udhcpc -i wwan0
+	sudo timeout 10 udhcpc -i wwan0
 	RC=$?
 	if [ $RC != 0 ];then
 	       continue
