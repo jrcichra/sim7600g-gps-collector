@@ -1,5 +1,6 @@
 create table `stats`(
 	`id` bigint auto_increment primary key,
+	`date` datetime default current_timestamp,
 	`operating_mode` varchar(255),
 	`hw_restricted` varchar(255),
 	`current` int,
