@@ -79,7 +79,7 @@ my $signal_strength_output = `sudo qmicli -d $device --nas-get-signal-strength`;
 #		MNC: '260'
 #		Description: 'T-Mobile'
 
-my $home_network_output = `sudo qmicli -d /dev/cdc-wdm0 --nas-get-home-network`;
+my $home_network_output = `sudo qmicli -d $device --nas-get-home-network`;
 ($stats{mcc})                 = $home_network_output =~ /MCC:.*'(.*)'/;
 ($stats{mnc})                 = $home_network_output =~ /MNC:.*'(.*)'/;
 ($stats{network_description}) = $home_network_output =~ /Description:.*'(.*)'/;
