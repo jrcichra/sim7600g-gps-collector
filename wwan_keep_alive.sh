@@ -4,9 +4,12 @@ echo "Sleeping for a bit after systemd tells us to start just in case!"
 sleep 18
 while true
 do
+	# Write out the date that we get to the top of this script
+	date '+%s' >> /tmp/reboots.log
 	# Sometimes this doesn't work on the first try
 	while true
 	do
+		# Reset the chip
 		if [ ! -e /sys/class/gpio/gpio4 ]; then
 		    echo "File exists."
 		    echo "4" > /sys/class/gpio/export
@@ -55,6 +58,56 @@ do
 	if [ $RC != 0 ];then
 	       continue
 	fi	       
+	sleep 2
+
+	# Set up the GPS
+
+	# Kill any existing gpsd if there is one
+	sudo killall -9 gpsd || /bin/true
+
+	stty -F /dev/ttyS0 115200 raw -echo -echoe -echok -echoctl -echoke
+	RC=$?
+	if [ $RC != 0 ];then
+	       continue
+	fi	       
+	sleep 2
+	echo -en 'AT+CGPS=0\r' > /dev/ttyS0
+	RC=$?
+	if [ $RC != 0 ];then
+	       continue
+	fi	       
+	sleep 2
+	echo -en 'AT+CVAUXV=3050\r' > /dev/ttyS0
+	RC=$?
+	if [ $RC != 0 ];then
+	       continue
+	fi	       
+	sleep 2
+	echo -en 'AT+CVAUXS=1\r' > /dev/ttyS0
+	RC=$?
+	if [ $RC != 0 ];then
+	       continue
+	fi	       
+	sleep 2
+	echo -en 'AT+CGPS=1,1\r' > /dev/ttyS0
+	RC=$?
+	if [ $RC != 0 ];then
+	       continue
+	fi	       
+	sleep 2
+	sudo gpsd /dev/ttyUSB1 -F /var/run/gpsd.sock
+	RC=$?
+	if [ $RC != 0 ];then
+	       continue
+	fi	       
+	sleep 2
+
+	# GPS should be working for anyone doing gpspipe
+
+	(gpspipe -w | jq -c . | grep TPV | ssh -p 43005 bikepi@a_hostname /home/bikepi/load_json.py) &
+
+	GPSPIPE=$!
+
 	# Ping forever and reset see if we lose it
 	while true
 	do
@@ -65,4 +118,7 @@ do
 		fi	       
 		sleep 1
 	done
+
+	kill -9 "${GPSPIPE}"
+	killall -9 gpspipe
 done
