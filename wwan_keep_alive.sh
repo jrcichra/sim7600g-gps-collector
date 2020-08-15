@@ -1,16 +1,13 @@
 #!/bin/bash
-set -x
 echo "Sleeping for a bit after systemd tells us to start just in case!"
-sleep 18
-while true
-do
+while true; do
 	# Write out the date that we get to the top of this script
 	date '+%s' >> /tmp/reboots.log
 	# Sometimes this doesn't work on the first try
 	while true
 	do
 		# Reset the chip
-		sudo /home/pi/gpio.sh
+		#sudo /home/pi/gpio.sh
 
 		sleep 4
 
@@ -20,6 +17,7 @@ do
 			sleep 3
 		       continue
 	        else
+                        sleep 22
 			break
 		fi	       
 	done
@@ -56,8 +54,6 @@ do
 	# Set up the GPS
 
 	# Kill any existing gpsd if there is one
-	sudo killall -9 gpsd || /bin/true
-
 	stty -F /dev/ttyS0 115200 raw -echo -echoe -echok -echoctl -echoke
 	RC=$?
 	if [ $RC != 0 ];then
@@ -88,7 +84,7 @@ do
 	       continue
 	fi	       
 	sleep 2
-	sudo gpsd /dev/ttyUSB1 -F /var/run/gpsd.sock
+	#sudo gpsd /dev/ttyUSB1 -F /var/run/gpsd.sock
 	RC=$?
 	if [ $RC != 0 ];then
 	       continue
@@ -97,21 +93,22 @@ do
 
 	# GPS should be working for anyone doing gpspipe
 
-	(gpspipe -w | jq -c . | grep TPV | ssh -p 43005 bikepi@a_hostname /home/bikepi/load_json.py) &
-
-	GPSPIPE=$!
-
+	sleep 10
+	sudo systemctl restart gpsd
 	# Ping forever and reset see if we lose it
-	while true
+        COUNT=0
+	while [ $COUNT -lt 20 ]
 	do
 		ping -c 1 -I wwan0 8.8.8.8
 		RC=$?
 		if [ $RC != 0 ];then
-		       break
+		       COUNT=$((COUNT+1))
+                else
+                       COUNT=0
 		fi	       
 		sleep 1
 	done
 
-	kill -9 "${GPSPIPE}"
-	killall -9 gpspipe
+	#kill -9 "${GPSPIPE}"
+	#killall -9 gpspipe
 done

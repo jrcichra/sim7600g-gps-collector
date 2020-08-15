@@ -1,0 +1,14 @@
+[Unit]
+Description=Batch Logs GPS data to home.
+Requires=gpsd.service
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /home/pi/batch_logger.sh
+User=pi
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target
+
