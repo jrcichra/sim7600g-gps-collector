@@ -2,7 +2,7 @@
 echo "Sleeping for a bit after systemd tells us to start just in case!"
 while true; do
 	# Write out the date that we get to the top of this script
-	date '+%s' >> /tmp/reboots.log
+	date '+%s' >> /home/$(whoami)/reboots.log
 	# Sometimes this doesn't work on the first try
 	while true
 	do
