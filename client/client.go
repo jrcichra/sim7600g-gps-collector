@@ -140,7 +140,7 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 func gpsdAlive(reset chan bool) {
 	const timeout = 15
 	ticker := time.NewTicker(timeout * time.Second)
-	cmd := exec.Command("sudo", "systemctl", "restart", "gpsd")
+	cmd := exec.Command("systemctl", "restart", "gpsd")
 	for {
 		select {
 		case <-ticker.C:
@@ -172,15 +172,23 @@ func main() {
 	// Keep GPSD alive
 	gpsdchan := make(chan bool)
 	go gpsdAlive(gpsdchan)
+	// Ticker for only one TPV for second
+	ticker := time.NewTicker(1 * time.Second)
 	// GPS loop
 	gps.AddFilter("TPV", func(r interface{}) {
 		// This anon function is called every time a new TPV value comes in, scoped this way so we can use q easily
 		gpsdchan <- true
-		tpv := r.(*gpsd.TPVReport)
-		dbr := &dbRecord{tpv, hostname}
-		err := q.Enqueue(dbr)
-		if err != nil {
-			panic(err)
+		select {
+		case <-ticker.C:
+			// Only enqueue if the ticker went off
+			tpv := r.(*gpsd.TPVReport)
+			dbr := &dbRecord{tpv, hostname}
+			err := q.Enqueue(dbr)
+			if err != nil {
+				panic(err)
+			}
+		default:
+			// Do nothing with the data
 		}
 		// log.Println("Location inserted into file queue:", string(dbrToBytes(dbr)))
 	})
