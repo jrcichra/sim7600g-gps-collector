@@ -130,10 +130,14 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 		body, _ := ioutil.ReadAll(resp.Body)
 		log.Println("response Body:", string(body))
 		resp.Body.Close()
-		// Dequeue this variable now
-		_, err = q.Dequeue()
-		if err != nil {
-			panic(err)
+		if resp.StatusCode == 200 {
+			// Dequeue this variable now
+			_, err = q.Dequeue()
+			if err != nil {
+				panic(err)
+			}
+		} else {
+			log.Println("Not dequeuing because I didn't get a 200 OK")
 		}
 	}
 }
