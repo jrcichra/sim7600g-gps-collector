@@ -204,4 +204,5 @@ func main() {
 	})
 	done := gps.Watch()
 	<-done
+	log.Println("The program is ending because gps.Watch() came back. Hopefully this shouldn't happen")
 }
