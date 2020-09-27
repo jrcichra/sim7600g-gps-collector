@@ -101,29 +101,34 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 		tme := m["time"]
 		location, err := time.LoadLocation(timezone)
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			continue
 		}
 		ttime, err := time.Parse(time.RFC3339, tme.(string))
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			continue
 		}
 		stime := ttime.In(location).Format("2006-01-02 15:04:05")
 		m["gps_timestamp"] = stime
 		delete(m, "time")
 		b, err := json.Marshal(m)
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			continue
 		}
 		log.Println("POSTING:", string(b))
 		req, err := http.NewRequest("POST", url+"/"+database+"/"+table, bytes.NewBuffer(b))
 		req.Header.Set("Content-Type", "application/json")
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			continue
 		}
 
 		resp, err := h.Do(req)
 		if err != nil {
-			panic(err)
+			log.Println(err)
+			continue
 		}
 
 		log.Println("response Status:", resp.Status)
