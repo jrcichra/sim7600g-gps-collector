@@ -20,6 +20,7 @@ const url = "https://ingest.jrcichra.dev"
 const database = "gps"
 const table = "gps"
 const timezone = "America/New_York"
+const TPVInterval = 10
 
 //gps record with hostname metadata
 type dbRecord struct {
@@ -172,8 +173,8 @@ func main() {
 	// Keep GPSD alive
 	gpsdchan := make(chan bool)
 	go gpsdAlive(gpsdchan)
-	// Ticker for only one TPV for second
-	ticker := time.NewTicker(1 * time.Second)
+	// Ticker for only one TPV per interval
+	ticker := time.NewTicker(TPVInterval * time.Second)
 	// GPS loop
 	gps.AddFilter("TPV", func(r interface{}) {
 		// This anon function is called every time a new TPV value comes in, scoped this way so we can use q easily
