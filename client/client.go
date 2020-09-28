@@ -148,7 +148,7 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 }
 
 func gpsdAlive(reset chan bool) {
-	const timeout = 15
+	const timeout = TPVInterval * 3
 	ticker := time.NewTicker(timeout * time.Second)
 	cmd := exec.Command("systemctl", "restart", "gpsd")
 	for {
