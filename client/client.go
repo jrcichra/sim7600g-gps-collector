@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/davecgh/go-spew/spew"
+
 	"github.com/joncrlsn/dque"
 	"github.com/stratoberry/go-gpsd"
 )
@@ -118,6 +120,8 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 			continue
 		}
 		//Make sure lat/lon isn't zero. If it is, skip it
+		log.Println("spew of m:")
+		spew.Dump(m)
 		if m["lat"] == 0 && m["lon"] == 0 {
 			// Dequeue this variable and skip
 			log.Println("Found a bad lat+lon, skipping entry and dequeuing it")
