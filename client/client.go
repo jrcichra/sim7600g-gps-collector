@@ -117,6 +117,17 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 			log.Println(err)
 			continue
 		}
+		//Make sure lat/lon isn't zero. If it is, skip it
+		if m["lat"] == 0 && m["lon"] == 0 {
+			// Dequeue this variable and skip
+			log.Println("Found a bad lat+lon, skipping entry and dequeuing it")
+			_, err = q.Dequeue()
+			if err != nil {
+				panic(err)
+			}
+			continue
+		}
+
 		log.Println("POSTING:", string(b))
 		req, err := http.NewRequest("POST", url+"/"+database+"/"+table, bytes.NewBuffer(b))
 		req.Header.Set("Content-Type", "application/json")
