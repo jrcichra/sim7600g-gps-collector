@@ -14,7 +14,7 @@ _uninstall:
 	sudo rm /usr/local/bin/wwan_setup.sh
 	sudo rm /usr/local/bin/gps_collector
 	sudo systemctl disable --now gps_collector
-	sudo rm /etc/system/system/gps_collector.service
+	sudo rm /etc/systemd/system/gps_collector.service
 build: _build
 install: _build _install
 uninstall: _uninstall
