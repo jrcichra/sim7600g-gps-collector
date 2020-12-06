@@ -1,2 +1,2 @@
-client/client
-client/gps_queue/
+gps_collector/gps_queue
+gps_collector/gps_collector

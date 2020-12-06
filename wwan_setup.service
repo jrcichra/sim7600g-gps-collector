@@ -1,0 +1,9 @@
+[Unit]
+Description=wwan_setup
+
+[Service]
+Type=simple
+ExecStart=/bin/bash /usr/local/bin/wwan_setup.sh
+
+[Install]
+WantedBy=multi-user.target

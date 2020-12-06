@@ -6,19 +6,15 @@ while true; do
 	# Sometimes this doesn't work on the first try
 	while true
 	do
-		# Reset the chip
-		#sudo /home/pi/gpio.sh
-
 		sleep 4
-
 		sudo qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='online'
 		RC=$?
 		if [ $RC != 0 ];then
 			sleep 3
 		       continue
 	        else
-                        sleep 22
-			break
+                sleep 22
+				break
 		fi	       
 	done
 	sleep 2
@@ -36,7 +32,7 @@ while true; do
 	RC=$?
 	if [ $RC != 0 ];then
 	       continue
-	fi	       
+	fi
 	sleep 2
 	sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network="ip-type=4" --client-no-release-cid
 	RC=$?
@@ -96,7 +92,7 @@ while true; do
 	sleep 10
 	sudo systemctl restart gpsd
 	# Ping forever and reset see if we lose it
-        COUNT=0
+    COUNT=0
 	while [ $COUNT -lt 20 ]
 	do
 		ping -c 1 -I wwan0 8.8.8.8
@@ -108,7 +104,4 @@ while true; do
 		fi	       
 		sleep 1
 	done
-
-	#kill -9 "${GPSPIPE}"
-	#killall -9 gpspipe
 done

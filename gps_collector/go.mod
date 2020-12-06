@@ -1,4 +1,4 @@
-module github.com/jrcichra/sim7600g-tools/client
+module github.com/jrcichra/sim7600g-tools/gps_collector
 
 go 1.15
 

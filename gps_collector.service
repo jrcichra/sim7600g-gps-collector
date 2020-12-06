@@ -1,0 +1,12 @@
+[Unit]
+Description=GPS Collector
+Requires=gpsd.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/gps_collector
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
