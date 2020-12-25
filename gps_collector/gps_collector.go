@@ -119,10 +119,10 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 			log.Println(err)
 			continue
 		}
-		//Make sure lat/lon isn't zero. If it is, skip it
+		//Make sure lat/lon isn't zero & the time is at least reasonable. If it is bad data, skip it
 		log.Println("spew of m:")
 		spew.Dump(m)
-		if m["lat"] == 0.0 && m["lon"] == 0.0 {
+		if m["lat"] == 0.0 || m["lon"] == 0.0 || ttime.In(location).Year() < time.Now().In(location).Year()-1 {
 			// Dequeue this variable and skip
 			log.Println("Found a bad lat+lon, skipping entry and dequeuing it")
 			_, err = q.Dequeue()
