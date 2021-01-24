@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -11,8 +10,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-
-	"github.com/davecgh/go-spew/spew"
 
 	"github.com/joncrlsn/dque"
 	"github.com/stratoberry/go-gpsd"
@@ -120,8 +117,8 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 			continue
 		}
 		//Make sure lat/lon isn't zero & the time is at least reasonable. If it is bad data, skip it
-		log.Println("spew of m:")
-		spew.Dump(m)
+		// log.Println("spew of m:")
+		// spew.Dump(m)
 		if m["lat"] == 0.0 || m["lon"] == 0.0 || ttime.In(location).Year() < time.Now().In(location).Year()-1 {
 			// Dequeue this variable and skip
 			log.Println("Found a bad lat+lon, skipping entry and dequeuing it")
@@ -147,8 +144,8 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 		}
 
 		log.Println("response Status:", resp.Status)
-		body, _ := ioutil.ReadAll(resp.Body)
-		log.Println("response Body:", string(body))
+		// body, _ := ioutil.ReadAll(resp.Body)
+		// log.Println("response Body:", string(body))
 		if resp.StatusCode == 200 {
 			// Dequeue this variable now
 			_, err = q.Dequeue()
