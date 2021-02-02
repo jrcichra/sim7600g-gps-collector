@@ -3,6 +3,8 @@ Description=wwan_setup
 
 [Service]
 Type=simple
+Restart=always
+RestartSec=5
 ExecStart=/bin/bash /usr/local/bin/wwan_setup.sh
 
 [Install]
