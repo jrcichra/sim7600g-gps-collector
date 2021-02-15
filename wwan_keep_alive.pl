@@ -99,7 +99,7 @@ sub handle_data {
             sleep 1;
             system("ping -c 1 -I wwan0 8.8.8.8");
             # increment count if the ping failed, reset if passed
-            $? >> 8 != 0 ? $count += 1 : $count = 0;
+            $? >> 8 == 0 ? $count = 0 : $count++;
 	    println("data count = $count");
         }
 
@@ -119,7 +119,7 @@ sub handle_gps {
             sleep 1;
             my $gpspipe_output = `timeout 10 gpspipe -w`;
             # increment count if no TPV data, reset if passed
-            !( $gpspipe_output =~ /TPV/ ) ? $count += 1 : $count = 0;
+            index($gpspipe_output,"TPV") != -1 ? $count = 0 : $count++;
 	    println("gps count = $count");
         }
 

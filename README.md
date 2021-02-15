@@ -24,3 +24,6 @@ V3 runs two perl threads - one that monitors the data connection with a ping to 
 + (You'll need a recent version of the Go compiler)
 + `sudo make install` compiles the Go code, places binaries/scripts in `/usr/local/bin`, and enables the systemd targets
 + `sudo make uninstall` removes what was added to `/usr/local/bin` and instantly disables the systemd targets.
++ Modify `/etc/default/gpsd` and set `DEVICES="/dev/ttyUSB1"`
++ `sudo systemctl daemon-reload`
++ `sudo systemctl restart gpsd`
