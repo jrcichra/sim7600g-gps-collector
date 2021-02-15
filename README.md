@@ -1,13 +1,14 @@
 # sim7600g-gps-collector
 + A GPS collection package to monitor Pis in the wild
 + Tested on Raspbian using a Rasperry Pi 4B with this hat: https://www.waveshare.com/wiki/SIM7600G-H_4G_HAT
-+ Running kernel `5.4.79-v7l+`
++ Running kernel `5.10.11-v7l+`, but also worked on 5.4 series
 # Known issues
 + This is still a WIP that is actively being tested. Don't use this in critical applications!!!
-+ The GPS will stop responding at times
-+ The celluar data will lose signal
++ GPS data will be intermittent
++ Cellular data will be intermittent
++ We're working out why & trying alternative modes
 
-For V2, I've ripped out the `reset` logic in an attempt to let the sim7600g driver prove itself. If the sim7600g never resets, please refer to `wwan_keep_alive.sh` in the `version1` folder. Replace the contents of `wwan_setup.sh` with the contents of `wwan_keep_alive.sh`. Then `make install`.
+V3 runs two perl threads - one that monitors the data connection with a ping to Google, and the other checks for `TPV` data in calls to `gpspipe -w`. Each issue will be addressed separately by the responsible thread
 
 # Setup
 ## Server-side 
