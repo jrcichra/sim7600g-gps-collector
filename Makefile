@@ -6,7 +6,7 @@ _install:
 	sudo cp wwan_setup.service /etc/systemd/system/
 	sudo systemctl enable wwan_setup
 	sudo cp gps_collector/gps_collector /usr/local/bin/gps_collector
-	sudo cp gps_collector.service /etc/systemd/system
+	sudo cp gps_collector.service /etc/systemd/system/
 	sudo systemctl enable gps_collector
 _uninstall:
 	sudo systemctl disable --now wwan_setup
