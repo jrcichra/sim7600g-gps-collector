@@ -159,26 +159,6 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 	}
 }
 
-func gpsdAlive(reset chan bool) {
-	const timeout = TPVInterval * 3
-	ticker := time.NewTicker(timeout * time.Second)
-	cmd := exec.Command("systemctl", "restart", "gpsd")
-	for {
-		select {
-		case <-ticker.C:
-			// GPSD did not send data and we need to reset it
-			log.Println("Attempting to restart gpsd...")
-			err := cmd.Run()
-			if err != nil {
-				log.Println(err)
-			}
-		case <-reset:
-			//Reset the ticker timer we got a point
-			ticker.Reset(timeout * time.Second)
-		}
-	}
-}
-
 func main() {
 	//connect to gps
 	gps := makeGPS("localhost", 2947)
@@ -191,15 +171,11 @@ func main() {
 	}
 	// Handle sending off HTTP posts
 	go queueToPost(q, h)
-	// Keep GPSD alive
-	//gpsdchan := make(chan bool)
-	//go gpsdAlive(gpsdchan)
 	// Ticker for only one TPV per interval
 	ticker := time.NewTicker(TPVInterval * time.Second)
 	// GPS loop
 	gps.AddFilter("TPV", func(r interface{}) {
 		// This anon function is called every time a new TPV value comes in, scoped this way so we can use q easily
-		//gpsdchan <- true
 		select {
 		case <-ticker.C:
 			// Only enqueue if the ticker went off
