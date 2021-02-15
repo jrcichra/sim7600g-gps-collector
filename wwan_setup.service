@@ -5,7 +5,7 @@ Description=wwan_setup
 Type=simple
 Restart=always
 RestartSec=5
-ExecStart=/bin/bash /usr/local/bin/wwan_setup.sh
+ExecStart=/usr/local/bin/wwan_keep_alive.pl
 
 [Install]
 WantedBy=multi-user.target
