@@ -1,5 +1,5 @@
 [Unit]
-Description=wwan_setup
+Description=wwan_keep_alive
 
 [Service]
 Type=simple
