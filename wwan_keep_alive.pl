@@ -1,57 +1,53 @@
 #!/usr/bin/perl
-#!/bin/bash
 
 use strict;
 use warnings;
-use Data::Dumper;
-use POSIX qw(strftime);
 use threads;
 use threads::shared;
+use IO::Handle;
+#use Data::Dumper;
 
 my $sleep_sec = 3;
 
 sub println {
     my $string = shift;
-    my $dt     = strftime("%c");
+    my $dt     = time();
     print("[$dt]: $string\n");
 }
 
 sub write_reboot {
     my $name = shift;
-
-    # Write out the date that we get to the top of this script
-    my $whoami = `whoami`;
-    chomp;
-    open( my $reboots_file, '>>', "/home/$whoami/reboots.log" );
+    open( my $reboots_file, '>>', "/home/pi/reboots.log" );
     my $t = time();
     print $reboots_file "$t - $name restarted.\n";
+    close $reboots_file;
 }
 
-sub connect_cell {
-    println("Entering connect_cell()...");
+sub connect_data {
+    println("Entering connect_data()...");
     while (1) {
-        println("Connecting Cell...");
+        println("Connecting Data...");
         sleep $sleep_sec;
         system(
-            "sudo qmicli -d /dev/cdc -wdm0 --dms-set-operating-mode = 'online'"
+            "qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='online'"
         );
         next if $? >> 8 != 0;
         sleep $sleep_sec;
-        system("sudo ip link set wwan0 down");
+        system("ip link set wwan0 down");
         next if $? >> 8 != 0;
         sleep $sleep_sec;
-        system("echo 'Y' | sudo tee /sys/class/net/wwan0/qmi/raw_ip");
+        system("echo 'Y' | tee /sys/class/net/wwan0/qmi/raw_ip");
         next if $? >> 8 != 0;
         sleep $sleep_sec;
-        system("sudo ip link set wwan0 up");
+        system("ip link set wwan0 up");
         next if $? >> 8 != 0;
         sleep $sleep_sec;
         system(
-"sudo qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network='ip-type=4' --client-no-release-cid"
+"qmicli -p -d /dev/cdc-wdm0 --device-open-net='net-raw-ip|net-no-qos-header' --wds-start-network='ip-type=4' --client-no-release-cid"
         );
         next if $? >> 8 != 0;
         sleep $sleep_sec;
-        system("sudo timeout 20 udhcpc -i wwan0");
+        system("timeout 20 udhcpc -i wwan0");
         next if $? >> 8 != 0;
         sleep $sleep_sec;
         sleep $sleep_sec;
@@ -61,7 +57,7 @@ sub connect_cell {
         system("ping 8.8.8.8 -I wwan0 -c1 -W2");
         next if $? >> 8 != 0;
         sleep $sleep_sec;
-        println("Connected Cell!");
+        println("Connected Data!");
         last;
     }
 }
@@ -76,21 +72,19 @@ sub connect_gps {
         );
         next if $? >> 8 != 0;
         sleep $sleep_sec;
-        system("echo -en 'AT+CGPS=0\r' > /dev/ttyS0");
-        next if $? >> 8 != 0;
+	my $filename = "/dev/ttyUSB2";
+	open( my $tty, '>>', $filename) or die "Could not open file $filename";
+	print $tty "AT+CGPS=0\r";
+	$tty->autoflush;
         sleep $sleep_sec;
-        system("echo -en 'AT+CVAUXV=3050\r' > /dev/ttyS0");
+	print $tty "AT+CGPS=1\r";
+	$tty->autoflush;
+	sleep $sleep_sec;
+        system("systemctl restart gpsd");
         next if $? >> 8 != 0;
-        sleep $sleep_sec;
-        system("echo -en 'AT+CVAUXS=1\r' > /dev/ttyS0");
-        next if $? >> 8 != 0;
-        sleep $sleep_sec;
-        system("echo -en 'AT+CGPS=1,1\r' > /dev/ttyS0");
-        next if $? >> 8 != 0;
-        sleep $sleep_sec;
-        system("sudo systemctl restart gpsd");
-        next if $? >> 8 != 0;
-        sleep $sleep_sec;
+	println("Connected GPS!");
+	close $tty;
+	last;
     }
 }
 
@@ -101,12 +95,13 @@ sub handle_data {
     # make sure ping works
     while (1) {
         my $count = 0;
-        while ( $count <= 20 ) {
-            sleep $sleep_sec;
+        while ( $count <= 10 ) {
+            sleep 1;
             system("ping -c 1 -I wwan0 8.8.8.8");
 
             # increment count if the ping failed
             $count += 1 if $? >> 8 != 0;
+	    println("data count=$count");
         }
 
         # reconnect data
@@ -121,12 +116,13 @@ sub handle_gps {
     # make sure gps works
     while (1) {
         my $count = 0;
-        while ( $count <= 20 ) {
-            sleep $sleep_sec;
-            my $gpspipe_output = `sudo timeout 10 gpspipe -w`;
+        while ( $count <= 5 ) {
+            sleep 1;
+            my $gpspipe_output = `timeout 10 gpspipe -w`;
 
             # increment count if no TPV data
             $count += 1 if !( $gpspipe_output =~ /TPV/ );
+	    println("gps count=$count");
         }
 
         # reconnect gps

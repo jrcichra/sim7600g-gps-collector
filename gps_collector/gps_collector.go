@@ -192,14 +192,14 @@ func main() {
 	// Handle sending off HTTP posts
 	go queueToPost(q, h)
 	// Keep GPSD alive
-	gpsdchan := make(chan bool)
-	go gpsdAlive(gpsdchan)
+	//gpsdchan := make(chan bool)
+	//go gpsdAlive(gpsdchan)
 	// Ticker for only one TPV per interval
 	ticker := time.NewTicker(TPVInterval * time.Second)
 	// GPS loop
 	gps.AddFilter("TPV", func(r interface{}) {
 		// This anon function is called every time a new TPV value comes in, scoped this way so we can use q easily
-		gpsdchan <- true
+		//gpsdchan <- true
 		select {
 		case <-ticker.C:
 			// Only enqueue if the ticker went off
