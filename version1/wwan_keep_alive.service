@@ -1,9 +1,0 @@
-[Unit]
-Description=wwan_keep_alive
-
-[Service]
-Type=simple
-ExecStart=/bin/bash /home/pi/wwan_keep_alive.sh
-
-[Install]
-WantedBy=multi-user.target
