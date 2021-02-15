@@ -105,8 +105,8 @@ sub handle_data {
             sleep $sleep_sec;
             system("ping -c 1 -I wwan0 8.8.8.8");
 
-            # increment count if the ping failed
-            $count += 1 if $? >> 8 != 0;
+            # increment count if the ping failed, reset if passed
+            $? >> 8 != 0 ? $count += 1 : $count = 0;
         }
 
         # reconnect data
@@ -125,8 +125,8 @@ sub handle_gps {
             sleep $sleep_sec;
             my $gpspipe_output = `sudo timeout 10 gpspipe -w`;
 
-            # increment count if no TPV data
-            $count += 1 if !( $gpspipe_output =~ /TPV/ );
+            # increment count if no TPV data, reset if passed
+            !( $gpspipe_output =~ /TPV/ ) ? $count += 1 : $count = 0;
         }
 
         # reconnect gps
