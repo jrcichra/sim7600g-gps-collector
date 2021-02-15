@@ -95,7 +95,7 @@ sub handle_data {
     # make sure ping works
     while (1) {
         my $count = 0;
-        while ( $count <= 10 ) {
+        while ( $count < 10 ) {
             sleep 1;
             system("ping -c 1 -I wwan0 8.8.8.8");
             # increment count if the ping failed, reset if passed
@@ -115,7 +115,7 @@ sub handle_gps {
     # make sure gps works
     while (1) {
         my $count = 0;
-        while ( $count <= 5 ) {
+        while ( $count < 5 ) {
             sleep 1;
             my $gpspipe_output = `timeout 10 gpspipe -w`;
             # increment count if no TPV data, reset if passed
