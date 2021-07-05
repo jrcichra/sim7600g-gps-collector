@@ -15,9 +15,10 @@ import (
 )
 
 const url = "https://ingest.jrcichra.dev"
-const database = "gps"
+const database = "public"
 const table = "gps"
-const timezone = "America/New_York"
+//const timezone = "America/New_York"
+const timezone = "Etc/UTC"
 const TPVInterval = 10
 
 //gps record with hostname metadata
