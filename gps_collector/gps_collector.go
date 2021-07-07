@@ -91,7 +91,6 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 				log.Fatal("Error dequeuing item ", err)
 			}
 		}
-	}
 
 		// rename columns
 		record := t.(*dbRecord)
@@ -112,7 +111,6 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 			log.Println(err)
 			continue
 		}
-
 
 		//Make sure lat/lon isn't zero & the time is at least reasonable. If it is bad data, skip it
 		// log.Println("spew of m:")
