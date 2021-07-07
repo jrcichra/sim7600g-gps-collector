@@ -17,8 +17,6 @@ import (
 const url = "https://ingest.jrcichra.dev"
 const database = "public"
 const table = "gps"
-//const timezone = "America/New_York"
-const timezone = "Etc/UTC"
 const TPVInterval = 10
 
 //gps record with hostname metadata
@@ -93,33 +91,33 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 				log.Fatal("Error dequeuing item ", err)
 			}
 		}
+	}
 
-		// Convert it to map so we can rename a column
+		// rename columns
 		record := t.(*dbRecord)
 		m := dbrToMap(record)
 		tme := m["time"]
-		location, err := time.LoadLocation(timezone)
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		ttime, err := time.Parse(time.RFC3339, tme.(string))
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-		stime := ttime.In(location).Format("2006-01-02 15:04:05")
-		m["gps_timestamp"] = stime
 		delete(m, "time")
+		m["gps_timestamp"] = tme
 		b, err := json.Marshal(m)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
+
+		// parse time to Golang time for checks
+
+		ttime, err := time.Parse(time.RFC3339, tme.(string))
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+
+
 		//Make sure lat/lon isn't zero & the time is at least reasonable. If it is bad data, skip it
 		// log.Println("spew of m:")
 		// spew.Dump(m)
-		if m["lat"] == 0.0 || m["lon"] == 0.0 || ttime.In(location).Year() < time.Now().In(location).Year()-1 {
+		if m["lat"] == 0.0 || m["lon"] == 0.0 || ttime.Year() < time.Now().Year()-1 {
 			// Dequeue this variable and skip
 			log.Println("Found a bad lat+lon, skipping entry and dequeuing it")
 			_, err = q.Dequeue()
