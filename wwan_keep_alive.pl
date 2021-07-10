@@ -77,6 +77,12 @@ sub connect_gps {
 	print $tty "AT+CGPS=0\r";
 	$tty->autoflush;
         sleep $sleep_sec;
+	print $tty "AT+CGPSDEL\r";
+	$tty->autoflush;
+        sleep $sleep_sec;
+	print $tty "AT+CGPSAUTO=1\r";
+	$tty->autoflush;
+        sleep $sleep_sec;
 	print $tty "AT+CGPS=1\r";
 	$tty->autoflush;
 	sleep $sleep_sec;
