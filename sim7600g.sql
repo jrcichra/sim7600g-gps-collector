@@ -23,4 +23,4 @@ CREATE TABLE `gps` (
   PRIMARY KEY (`id`),
   KEY `gps_record_timestamp_IDX` (`record_timestamp`) USING BTREE,
   KEY `gps_gps_timestamp_IDX` (`gps_timestamp`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=591660 DEFAULT CHARSET=utf8
+)
