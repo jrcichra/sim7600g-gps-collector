@@ -8,8 +8,8 @@ CREATE TABLE `gps` (
   `device` varchar(255) NOT NULL,
   `mode` int NOT NULL,
   `ept` float NOT NULL,
-  `lat` double NOT NULL,
-  `lon` double NOT NULL,
+  `lat` float NOT NULL,
+  `lon` float NOT NULL,
   `alt` float NOT NULL,
   `epx` float NOT NULL,
   `epy` float NOT NULL,
@@ -26,6 +26,7 @@ CREATE TABLE `gps` (
         when (locate(_utf8mb4'.',`gps_timestamp`) <> 0) then convert_tz(str_to_date(`gps_timestamp`,_utf8mb4'%Y-%m-%dT%H:%i:%s.%fZ'),_utf8mb4'Zulu',_utf8mb4'America/New_York')
     end)
     ) VIRTUAL,
+  `cputemp` float DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `gps_record_timestamp_IDX` (`record_timestamp`) USING BTREE,
   KEY `indx_v_gps_timestamp` (`v_gps_timestamp`)

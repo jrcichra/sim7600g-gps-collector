@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"io/ioutil"
 
 	"github.com/joncrlsn/dque"
 	"github.com/stratoberry/go-gpsd"
@@ -17,12 +18,14 @@ import (
 const url = "https://ingest.jrcichra.dev"
 const database = "public"
 const table = "gps"
-const TPVInterval = 10
+const TPVInterval = 10 
 
 //gps record with hostname metadata
+//jonathandbriggs: Added cputemp scraping for raspi.
 type dbRecord struct {
 	*gpsd.TPVReport
 	Hostname string `json:"hostname"`
+	Cputemp  float64 `json:"cputemp"`
 }
 
 //gpsRecord - a basic GPS datapoint
@@ -176,7 +179,19 @@ func main() {
 		case <-ticker.C:
 			// Only enqueue if the ticker went off
 			tpv := r.(*gpsd.TPVReport)
-			dbr := &dbRecord{tpv, hostname}
+			// Include the CPU temp.
+			tmp, _ := ioutil.ReadFile(`/sys/class/thermal/thermal_zone0/temp`)
+			// Trim the newline off the end of the CPU Temp.
+			if len(tmp) > 0 {
+				tmp = tmp[:len(tmp)-1]
+			}
+			// Convert the "Byte Slice Array thing" to a string
+			tmpstr, _ := strconv.ParseFloat(string(tmp),64)
+			// Convert the string from "milliCelcius" to "Celcius" (I'm fully aware milli-celcius doesn't make sense.)
+			tmpstr = tmpstr/1000
+			log.Println("tempstr",tmpstr)
+			// Queue the record.
+			dbr := &dbRecord{tpv, hostname, tmpstr }
 			err := q.Enqueue(dbr)
 			if err != nil {
 				panic(err)
