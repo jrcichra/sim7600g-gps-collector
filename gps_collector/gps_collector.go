@@ -3,13 +3,13 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
-	"io/ioutil"
 
 	"github.com/joncrlsn/dque"
 	"github.com/stratoberry/go-gpsd"
@@ -18,13 +18,13 @@ import (
 const url = "https://ingest.jrcichra.dev"
 const database = "public"
 const table = "gps"
-const TPVInterval = 10 
+const TPVInterval = 10
 
 //gps record with hostname metadata
 //jonathandbriggs: Added cputemp scraping for raspi.
 type dbRecord struct {
 	*gpsd.TPVReport
-	Hostname string `json:"hostname"`
+	Hostname string  `json:"hostname"`
 	Cputemp  float64 `json:"cputemp"`
 }
 
@@ -129,14 +129,8 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 		}
 
 		log.Println("POSTING:", string(b))
-		req, err := http.NewRequest("POST", url+"/"+database+"/"+table, bytes.NewBuffer(b))
-		req.Header.Set("Content-Type", "application/json")
-		if err != nil {
-			log.Println(err)
-			continue
-		}
-
-		resp, err := h.Do(req)
+		// post
+		resp, err := h.Post(url+"/"+database+"/"+table, "application/json", bytes.NewBuffer(b))
 		if err != nil {
 			log.Println(err)
 			continue
@@ -163,6 +157,7 @@ func main() {
 	gps := makeGPS("localhost", 2947)
 	q := makeQueue()
 	h := &http.Client{}
+	h.Timeout = time.Second * 10
 	hostname, err := os.Hostname()
 	log.Println("hostname=", hostname)
 	if err != nil {
@@ -186,12 +181,12 @@ func main() {
 				tmp = tmp[:len(tmp)-1]
 			}
 			// Convert the "Byte Slice Array thing" to a string
-			tmpstr, _ := strconv.ParseFloat(string(tmp),64)
+			tmpstr, _ := strconv.ParseFloat(string(tmp), 64)
 			// Convert the string from "milliCelcius" to "Celcius" (I'm fully aware milli-celcius doesn't make sense.)
-			tmpstr = tmpstr/1000
-			log.Println("tempstr",tmpstr)
+			tmpstr = tmpstr / 1000
+			log.Println("tempstr", tmpstr)
 			// Queue the record.
-			dbr := &dbRecord{tpv, hostname, tmpstr }
+			dbr := &dbRecord{tpv, hostname, tmpstr}
 			err := q.Enqueue(dbr)
 			if err != nil {
 				panic(err)
