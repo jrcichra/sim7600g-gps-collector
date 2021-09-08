@@ -1,12 +1,6 @@
 # sim7600g-gps-collector
 + A GPS collection package to monitor Pis in the wild
-+ Tested on Raspbian using a Rasperry Pi 4B with this hat: https://www.waveshare.com/wiki/SIM7600G-H_4G_HAT
-+ Running kernel `5.10.11-v7l+`, but also worked on 5.4 series
-# Known issues
-+ This is still a WIP that is actively being tested. Don't use this in critical applications!!!
-+ GPS data will be intermittent
-+ Cellular data will be intermittent
-+ We're working out why & trying alternative modes
++ Tested on Raspbian using a Raspberry Pi 4B and Raspberry Pi Zero W with this hat: https://www.waveshare.com/wiki/SIM7600G-H_4G_HAT
 
 V3 runs two perl threads - one that monitors the data connection with a ping to Google, and the other checks for `TPV` data in calls to `gpspipe -w`. Each issue will be addressed separately by the responsible thread
 
