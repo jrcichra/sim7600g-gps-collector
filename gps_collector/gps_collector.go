@@ -54,7 +54,7 @@ func makeQueue() *dque.DQue {
 }
 
 func makeGPS(hostname string, port int) *gpsd.Session {
-	gps, err := gpsd.Dial(hostname + ":" + strconv.Itoa(port))
+	gps, err := gpsd.DialTimeout(hostname+":"+strconv.Itoa(port), time.Second*5)
 	if err != nil {
 		panic(err)
 	}
