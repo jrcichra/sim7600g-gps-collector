@@ -157,7 +157,7 @@ func main() {
 	gps := makeGPS("localhost", 2947)
 	q := makeQueue()
 	h := &http.Client{}
-	h.Timeout = time.Second * 10
+	h.Timeout = time.Second * 20
 	hostname, err := os.Hostname()
 	log.Println("hostname=", hostname)
 	if err != nil {
