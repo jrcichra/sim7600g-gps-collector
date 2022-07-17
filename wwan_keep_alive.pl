@@ -67,9 +67,12 @@ sub connect_gps {
 "Checking if /dev/ttyUSB1 exists. If it doesn't, we need to reboot the pi."
         );
         if ( !-e "/dev/ttyUSB1" ) {
-            println("/dev/ttyUSB1 does not exist.");
-            write_reboot("system");
-            system("reboot");
+            println(
+"/dev/ttyUSB1 does not exist. I would have done a reboot just now."
+            );
+
+            # write_reboot("system");
+            # system("reboot");
             next;
         }
         sleep $sleep_sec;
