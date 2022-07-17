@@ -5,7 +5,6 @@ use warnings;
 use threads;
 use threads::shared;
 use IO::Handle;
-#use Data::Dumper;
 
 my $sleep_sec = 3;
 
@@ -28,9 +27,7 @@ sub connect_data {
     while (1) {
         println("Connecting Data...");
         sleep $sleep_sec;
-        system(
-            "qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='online'"
-        );
+        system("qmicli -d /dev/cdc-wdm0 --dms-set-operating-mode='online'");
         next if $? >> 8 != 0;
         sleep $sleep_sec;
         system("ip link set wwan0 down");
@@ -66,31 +63,40 @@ sub connect_gps {
     println("Entering connect_gps()...");
     while (1) {
         println("Connecting GPS...");
+        println(
+"Checking if /dev/ttyUSB1 exists. If it doesn't, we need to reboot the pi."
+        );
+        if ( !-e "/dev/ttyUSB1" ) {
+            println("/dev/ttyUSB1 does not exist.");
+            write_reboot("system");
+            system("reboot");
+            next;
+        }
         sleep $sleep_sec;
         system(
             "stty -F /dev/ttyS0 115200 raw -echo -echoe -echok -echoctl -echoke"
         );
         next if $? >> 8 != 0;
         sleep $sleep_sec;
-	my $filename = "/dev/ttyUSB2";
-	open( my $tty, '>>', $filename) or die "Could not open file $filename";
-	print $tty "AT+CGPS=0\r";
-	$tty->autoflush;
+        my $filename = "/dev/ttyUSB2";
+        open( my $tty, '>>', $filename ) or die "Could not open file $filename";
+        print $tty "AT+CGPS=0\r";
+        $tty->autoflush;
         sleep $sleep_sec;
-	print $tty "AT+CGPSDEL\r";
-	$tty->autoflush;
+        print $tty "AT+CGPSDEL\r";
+        $tty->autoflush;
         sleep $sleep_sec;
-	print $tty "AT+CGPSAUTO=1\r";
-	$tty->autoflush;
+        print $tty "AT+CGPSAUTO=1\r";
+        $tty->autoflush;
         sleep $sleep_sec;
-	print $tty "AT+CGPS=1\r";
-	$tty->autoflush;
-	sleep $sleep_sec;
+        print $tty "AT+CGPS=1\r";
+        $tty->autoflush;
+        sleep $sleep_sec;
         system("systemctl restart gpsd");
         next if $? >> 8 != 0;
-	println("Connected GPS!");
-	close $tty;
-	last;
+        println("Connected GPS!");
+        close $tty;
+        last;
     }
 }
 
@@ -104,9 +110,10 @@ sub handle_data {
         while ( $count < 10 ) {
             sleep 1;
             system("ping -c 1 -I wwan0 8.8.8.8");
+
             # increment count if the ping failed, reset if passed
             $? >> 8 == 0 ? $count = 0 : $count++;
-	    println("data count = $count");
+            println("data count = $count");
         }
 
         # reconnect data
@@ -124,9 +131,10 @@ sub handle_gps {
         while ( $count < 5 ) {
             sleep 1;
             my $gpspipe_output = `timeout 10 gpspipe -w`;
+
             # increment count if no TPV data, reset if passed
-            index($gpspipe_output,"TPV") != -1 ? $count = 0 : $count++;
-	    println("gps count = $count");
+            index( $gpspipe_output, "TPV" ) != -1 ? $count = 0 : $count++;
+            println("gps count = $count");
         }
 
         # reconnect gps
