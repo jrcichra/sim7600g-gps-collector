@@ -73,6 +73,7 @@ sub connect_gps {
 
             # write_reboot("system");
             # system("reboot");
+            sleep $sleep_sec;
             next;
         }
         sleep $sleep_sec;
