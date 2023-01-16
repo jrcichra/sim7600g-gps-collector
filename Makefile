@@ -1,7 +1,7 @@
 default: install
 
 _build:
-	cd gps_collector && go build -o gps_collector
+	cd gps_collector && go build -v -o gps_collector
 _install:
 	sudo cp wwan_keep_alive.py /usr/local/bin/wwan_keep_alive.py
 	sudo cp wwan_keep_alive.service /etc/systemd/system/
