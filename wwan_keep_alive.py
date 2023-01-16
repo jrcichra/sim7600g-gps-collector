@@ -16,7 +16,6 @@ DEFAULT_SLEEP_SECONDS = 3
 
 
 def sleep(seconds=DEFAULT_SLEEP_SECONDS):
-    logging.info(f"I should be sleeping for {seconds} seconds")
     time.sleep(seconds)
 
 
@@ -77,6 +76,7 @@ def connect_gps():
             # write_reboot("system")
             # if not system_and_sleep("reboot"):
             #     logging.info("Could not reboot the system!!!")
+            sleep()
         else:
             sleep()
             if not system_and_sleep(
