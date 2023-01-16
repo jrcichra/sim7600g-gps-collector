@@ -5,7 +5,7 @@ Description=wwan_keep_alive
 Type=simple
 Restart=always
 RestartSec=5
-ExecStart=/usr/local/bin/wwan_keep_alive.pl
+ExecStart=/usr/local/bin/wwan_keep_alive.py
 
 [Install]
 WantedBy=multi-user.target
