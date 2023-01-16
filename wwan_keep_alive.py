@@ -16,6 +16,7 @@ DEFAULT_SLEEP_SECONDS = 3
 
 
 def sleep(seconds=DEFAULT_SLEEP_SECONDS):
+    logging.info(f"I should be sleeping for {seconds} seconds")
     time.sleep(seconds)
 
 
