@@ -73,9 +73,9 @@ def connect_gps():
         )
         if not os.path.exists("/dev/ttyUSB1"):
             logging.info("/dev/ttyUSB1 does not exist. Rebooting the system")
-            # write_reboot("system")
-            # if not system_and_sleep("reboot"):
-            #     logging.info("Could not reboot the system!!!")
+            write_reboot("system")
+            if not system_and_sleep("reboot"):
+                logging.info("Could not reboot the system!!!")
             sleep()
         else:
             sleep()
