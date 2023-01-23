@@ -32,7 +32,7 @@ def system_and_sleep(command: str) -> bool:
 
 def write_reboot(name: str):
     logging.info("Writing entry to reboots.log...")
-    with open("a", "/home/pi/reboots.log") as f:
+    with open("/home/pi/reboots.log", "a") as f:
         now = int(time.time)
         f.write(f"{now} - {str} restarted.")
 
