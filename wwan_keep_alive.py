@@ -119,10 +119,18 @@ def handle_gps():
         count = 0
         while count < 5:
             sleep(1)
-            output = subprocess.check_output(["bash", "-c", "timeout 10 gpspipe -w"])
-            if "TPV" in output:
-                count = 0
-            else:
+            try:
+                output = subprocess.check_output(
+                    ["bash", "-c", "timeout 10 gpspipe -w"]
+                )
+                if "TPV" in output:
+                    count = 0
+                else:
+                    count += 1
+            except Exception as e:
+                logging.info(
+                    f"got exception on subprocess - considering this as a failure - {e}"
+                )
                 count += 1
             logging.info(f"gps count = {count}")
         # reconnect gps
