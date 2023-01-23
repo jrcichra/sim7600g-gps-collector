@@ -119,7 +119,7 @@ def handle_gps():
         count = 0
         while count < 5:
             sleep(1)
-            output = subprocess.check_output("timeout 10 gpspipe -w")
+            output = subprocess.check_output("bash", "-c", "'timeout 10 gpspipe -w'")
             if "TPV" in output:
                 count = 0
             else:
