@@ -84,13 +84,13 @@ def connect_gps():
             ):
                 continue
             ser = serial.Serial("/dev/ttyUSB2", 115200)
-            ser.write("AT+CGPS=0\r")
+            ser.write(b"AT+CGPS=0\r")
             sleep()
-            ser.write("AT+CGPSDEL\r")
+            ser.write(b"AT+CGPSDEL\r")
             sleep()
-            ser.write("AT+CGPSAUTO=1\r")
+            ser.write(b"AT+CGPSAUTO=1\r")
             sleep()
-            ser.write("AT+CGPS=1\r")
+            ser.write(b"AT+CGPS=1\r")
             sleep()
             if not system_and_sleep("systemctl restart gpsd"):
                 continue
