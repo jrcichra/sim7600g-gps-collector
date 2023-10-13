@@ -20,15 +20,15 @@ const database = "public"
 const table = "gps"
 const TPVInterval = 10
 
-//gps record with hostname metadata
-//jonathandbriggs: Added cputemp scraping for raspi.
+// gps record with hostname metadata
+// jonathandbriggs: Added cputemp scraping for raspi.
 type dbRecord struct {
 	*gpsd.TPVReport
 	Hostname string  `json:"hostname"`
 	Cputemp  float64 `json:"cputemp"`
 }
 
-//gpsRecord - a basic GPS datapoint
+// gpsRecord - a basic GPS datapoint
 type gpsRecord struct {
 	Value gpsd.TPVReport
 }
@@ -130,15 +130,21 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 
 		log.Println("POSTING:", string(b))
 		// post
-		resp, err := h.Post(url+"/"+database+"/"+table, "application/json", bytes.NewBuffer(b))
+		req, err := http.NewRequest("POST", url+"/"+database+"/"+table, bytes.NewBuffer(b))
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		req.Header.Set("Content-Type", "application/json")
+		req.Header.Set("User-Agent", "gps-collector")
+
+		resp, err := h.Do(req)
 		if err != nil {
 			log.Println(err)
 			continue
 		}
 
 		log.Println("response Status:", resp.Status)
-		// body, _ := ioutil.ReadAll(resp.Body)
-		// log.Println("response Body:", string(body))
 		if resp.StatusCode == 200 {
 			// Dequeue this variable now
 			_, err = q.Dequeue()
