@@ -85,7 +85,7 @@ func dbrToMap(dbr *dbRecord) map[string]interface{} {
 	return m
 }
 
-func queueToPost(q *dque.DQue, h *http.Client, cfg Config) {
+func queueToPost(q *dque.DQue, h *http.Client, cfg *Config) {
 	for {
 		// Only dequeue if we could successfully POST
 		var t interface{}
@@ -174,8 +174,8 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	var cfg Config
-	if err := yaml.Unmarshal(configFile, &cfg); err != nil {
+	cfg := &Config{}
+	if err := yaml.Unmarshal(configFile, cfg); err != nil {
 		panic(err)
 	}
 
