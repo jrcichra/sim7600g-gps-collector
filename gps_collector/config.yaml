@@ -1,0 +1,9 @@
+gpsd:
+  url: localhost
+  port: 2947
+  tpv_interval: 10
+ingestd:
+  url: https://ingest.jrcichra.dev
+  database: public
+  table: gps
+  additional_headers: []

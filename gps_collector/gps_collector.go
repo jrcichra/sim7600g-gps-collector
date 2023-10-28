@@ -3,22 +3,37 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"io/ioutil"
+	"flag"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/joncrlsn/dque"
 	"github.com/stratoberry/go-gpsd"
+	"gopkg.in/yaml.v2"
 )
 
-const url = "https://ingest.jrcichra.dev"
-const database = "public"
-const table = "gps"
-const TPVInterval = 10
+type GPSDConfig struct {
+	URL         string `json:"url"`
+	Port        int    `json:"port"`
+	TPVInterval int    `json:"tpv_interval"`
+}
+
+type IngestdConfig struct {
+	URL               string   `json:"url"`
+	Database          string   `json:"database"`
+	Table             string   `json:"table"`
+	AdditionalHeaders []string `json:"additional_headers"`
+}
+
+type Config struct {
+	GPSDConfig    `json:"gpsd"`
+	IngestdConfig `json:"ingestd"`
+}
 
 // gps record with hostname metadata
 // jonathandbriggs: Added cputemp scraping for raspi.
@@ -26,11 +41,6 @@ type dbRecord struct {
 	*gpsd.TPVReport
 	Hostname string  `json:"hostname"`
 	Cputemp  float64 `json:"cputemp"`
-}
-
-// gpsRecord - a basic GPS datapoint
-type gpsRecord struct {
-	Value gpsd.TPVReport
 }
 
 // dbRecordBuilder - abstracts out a dbRecord for dque to work
@@ -61,14 +71,6 @@ func makeGPS(hostname string, port int) *gpsd.Session {
 	return gps
 }
 
-func dbrToBytes(dbr *dbRecord) []byte {
-	b, err := json.Marshal(dbr)
-	if err != nil {
-		panic(err)
-	}
-	return b
-}
-
 func dbrToMap(dbr *dbRecord) map[string]interface{} {
 	m := make(map[string]interface{})
 	b, err := json.Marshal(dbr)
@@ -83,7 +85,7 @@ func dbrToMap(dbr *dbRecord) map[string]interface{} {
 	return m
 }
 
-func queueToPost(q *dque.DQue, h *http.Client) {
+func queueToPost(q *dque.DQue, h *http.Client, cfg Config) {
 	for {
 		// Only dequeue if we could successfully POST
 		var t interface{}
@@ -130,13 +132,18 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 
 		log.Println("POSTING:", string(b))
 		// post
-		req, err := http.NewRequest("POST", url+"/"+database+"/"+table, bytes.NewBuffer(b))
+
+		req, err := http.NewRequest("POST", cfg.IngestdConfig.URL+"/"+cfg.IngestdConfig.Database+"/"+cfg.IngestdConfig.Table, bytes.NewBuffer(b))
 		if err != nil {
 			log.Println(err)
 			continue
 		}
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "gps-collector")
+		for _, header := range cfg.IngestdConfig.AdditionalHeaders {
+			kv := strings.SplitN(header, "=", 2)
+			req.Header.Set(kv[0], kv[1])
+		}
 
 		resp, err := h.Do(req)
 		if err != nil {
@@ -159,8 +166,21 @@ func queueToPost(q *dque.DQue, h *http.Client) {
 }
 
 func main() {
+	// parse the config file
+	configPath := flag.String("config", "config.yaml", "path to config file")
+	flag.Parse()
+
+	configFile, err := os.ReadFile(*configPath)
+	if err != nil {
+		panic(err)
+	}
+	var cfg Config
+	if err := yaml.Unmarshal(configFile, &cfg); err != nil {
+		panic(err)
+	}
+
 	//connect to gps
-	gps := makeGPS("localhost", 2947)
+	gps := makeGPS(cfg.GPSDConfig.URL, cfg.GPSDConfig.Port)
 	q := makeQueue()
 	h := &http.Client{}
 	h.Timeout = time.Second * 20
@@ -170,9 +190,9 @@ func main() {
 		panic(err)
 	}
 	// Handle sending off HTTP posts
-	go queueToPost(q, h)
+	go queueToPost(q, h, cfg)
 	// Ticker for only one TPV per interval
-	ticker := time.NewTicker(TPVInterval * time.Second)
+	ticker := time.NewTicker(time.Duration(cfg.GPSDConfig.TPVInterval) * time.Second)
 	// GPS loop
 	gps.AddFilter("TPV", func(r interface{}) {
 		// This anon function is called every time a new TPV value comes in, scoped this way so we can use q easily
@@ -181,7 +201,7 @@ func main() {
 			// Only enqueue if the ticker went off
 			tpv := r.(*gpsd.TPVReport)
 			// Include the CPU temp.
-			tmp, _ := ioutil.ReadFile(`/sys/class/thermal/thermal_zone0/temp`)
+			tmp, _ := os.ReadFile(`/sys/class/thermal/thermal_zone0/temp`)
 			// Trim the newline off the end of the CPU Temp.
 			if len(tmp) > 0 {
 				tmp = tmp[:len(tmp)-1]
