@@ -167,7 +167,7 @@ func queueToPost(q *dque.DQue, h *http.Client, cfg Config) {
 
 func main() {
 	// parse the config file
-	configPath := flag.String("config", "config.yaml", "path to config file")
+	configPath := flag.String("config", "/etc/gps_collector/config.yaml", "path to config file")
 	flag.Parse()
 
 	configFile, err := os.ReadFile(*configPath)
