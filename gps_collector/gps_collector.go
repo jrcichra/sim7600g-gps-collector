@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -31,8 +32,8 @@ type IngestdConfig struct {
 }
 
 type Config struct {
-	GPSDConfig    `json:"gpsd"`
-	IngestdConfig `json:"ingestd"`
+	GPSDConfig    GPSDConfig    `json:"gpsd"`
+	IngestdConfig IngestdConfig `json:"ingestd"`
 }
 
 // gps record with hostname metadata
@@ -178,6 +179,7 @@ func main() {
 	if err := yaml.Unmarshal(configFile, cfg); err != nil {
 		panic(err)
 	}
+	fmt.Println("config", cfg)
 
 	//connect to gps
 	gps := makeGPS(cfg.GPSDConfig.URL, cfg.GPSDConfig.Port)
