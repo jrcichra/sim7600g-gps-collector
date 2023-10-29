@@ -19,29 +19,29 @@ import (
 )
 
 type GPSDConfig struct {
-	URL         string `json:"url"`
-	Port        int    `json:"port"`
-	TPVInterval int    `json:"tpv_interval"`
+	URL         string `yaml:"url"`
+	Port        int    `yaml:"port"`
+	TPVInterval int    `yaml:"tpv_interval"`
 }
 
 type IngestdConfig struct {
-	URL               string   `json:"url"`
-	Database          string   `json:"database"`
-	Table             string   `json:"table"`
-	AdditionalHeaders []string `json:"additional_headers"`
+	URL               string   `yaml:"url"`
+	Database          string   `yaml:"database"`
+	Table             string   `yaml:"table"`
+	AdditionalHeaders []string `yaml:"additional_headers"`
 }
 
 type Config struct {
-	GPSDConfig    GPSDConfig    `json:"gpsd"`
-	IngestdConfig IngestdConfig `json:"ingestd"`
+	GPSDConfig    GPSDConfig    `yaml:"gpsd"`
+	IngestdConfig IngestdConfig `yaml:"ingestd"`
 }
 
 // gps record with hostname metadata
 // jonathandbriggs: Added cputemp scraping for raspi.
 type dbRecord struct {
 	*gpsd.TPVReport
-	Hostname string  `json:"hostname"`
-	Cputemp  float64 `json:"cputemp"`
+	Hostname string  `yaml:"hostname"`
+	Cputemp  float64 `yaml:"cputemp"`
 }
 
 // dbRecordBuilder - abstracts out a dbRecord for dque to work
