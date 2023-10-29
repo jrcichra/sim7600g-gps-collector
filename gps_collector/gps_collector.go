@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"github.com/joncrlsn/dque"
@@ -25,10 +24,10 @@ type GPSDConfig struct {
 }
 
 type IngestdConfig struct {
-	URL               string   `yaml:"url"`
-	Database          string   `yaml:"database"`
-	Table             string   `yaml:"table"`
-	AdditionalHeaders []string `yaml:"additional_headers"`
+	URL               string            `yaml:"url"`
+	Database          string            `yaml:"database"`
+	Table             string            `yaml:"table"`
+	AdditionalHeaders map[string]string `yaml:"additional_headers"`
 }
 
 type Config struct {
@@ -141,9 +140,8 @@ func queueToPost(q *dque.DQue, h *http.Client, cfg *Config) {
 		}
 		req.Header.Set("Content-Type", "application/json")
 		req.Header.Set("User-Agent", "gps-collector")
-		for _, header := range cfg.IngestdConfig.AdditionalHeaders {
-			kv := strings.SplitN(header, "=", 2)
-			req.Header.Set(kv[0], kv[1])
+		for key, value := range cfg.IngestdConfig.AdditionalHeaders {
+			req.Header.Set(key, value)
 		}
 
 		resp, err := h.Do(req)
