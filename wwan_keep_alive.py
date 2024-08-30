@@ -58,7 +58,7 @@ def connect_data():
         if not system_and_sleep("timeout 20 udhcpc -i wwan0"):
             continue
         sleep(10)
-        if not system_and_sleep("ping 8.8.8.8 -I wwan0 -c1 -W2"):
+        if not system_and_sleep("ping 8.8.8.8 -I wwan0 -c1 -W2") and not system_and_sleep("ping 1.1.1.1 -I wwan0 -c1 -W2"):
             continue
         logging.info("Connected Data!")
         break
@@ -104,7 +104,7 @@ def handle_data():
         count = 0
         while count < 10:
             sleep(1)
-            if system("ping -c 1 -I wwan0 1.1.1.1"):
+            if system("ping -c 1 -I wwan0 1.1.1.1 > /dev/null 2>&1") or system("ping -c 1 -I wwan0 8.8.8.8 > /dev/null 2>&1"):
                 count = 0
             else:
                 count += 1
