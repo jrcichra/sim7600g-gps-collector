@@ -14,7 +14,7 @@ import (
 
 	"github.com/joncrlsn/dque"
 	"github.com/stratoberry/go-gpsd"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 )
 
 type GPSDConfig struct {
